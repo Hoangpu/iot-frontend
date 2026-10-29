@@ -133,7 +133,7 @@ const ActionHistory = () => {
     }
   }, [page, pageSize, actionFilter, deviceFilter, statusFilter, searchTime, sortDir]);
 
-  // Load actuators for device filter options - only keep LED 1 and LED 2
+  // Load actuators for device filter options 
   useEffect(() => {
     getActuators()
       .then((res) => {

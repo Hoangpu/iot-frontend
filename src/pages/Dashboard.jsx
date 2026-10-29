@@ -292,7 +292,7 @@ const Dashboard = () => {
                 <span className="y-unit-item y-unit-light">lx</span>
               </div>
 
-              <ResponsiveContainer width="100%" height={290}>
+              <ResponsiveContainer width="100%" height={500}>
                 <LineChart
                   data={sensorData}
                   margin={{ top: 22, right: 10, left: -10, bottom: 6 }}
