@@ -20,6 +20,7 @@ export const MOCK_SENSORS = [
 export const MOCK_ACTUATORS = [
   { id: 1, name: 'LED 1', type: 'led', isActive: true },
   { id: 2, name: 'LED 2', type: 'led', isActive: false },
+  { id: 3, name: 'LED 3', type: 'led', isActive: false },
 ];
 
 // ──────────────── LATEST SENSOR DATA (cho Dashboard chart) ────────────────
@@ -76,7 +77,7 @@ for (let i = 0; i < 200; i++) {
 }
 
 // ──────────────── ACTION HISTORY TABLE (cho trang ActionHistory - 150 bản ghi) ────────────────
-const DEVICE_NAMES = ['LED 1', 'LED 2'];
+const DEVICE_NAMES = ['LED 1', 'LED 2', 'LED 3'];
 const ACTIONS = ['ON', 'OFF'];
 const STATUSES = ['SUCCESS', 'SUCCESS', 'SUCCESS', 'SUCCESS', 'FAILED']; // 80% success, 20% failed
 const USERS = ['Mai Anh Hoàng', 'Admin', 'Nguyen Van A'];
@@ -90,8 +91,8 @@ for (let i = 0; i < 150; i++) {
     status: STATUSES[Math.floor(Math.random() * STATUSES.length)],
     time: ago(minutesAgo),
     device: {
-      id: (i % 2) + 1,
-      name: DEVICE_NAMES[i % 2],
+      id: (i % 3) + 1,
+      name: DEVICE_NAMES[i % 3],
     },
     user: {
       name: USERS[Math.floor(Math.random() * USERS.length)],

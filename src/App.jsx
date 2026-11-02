@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, History, Radio, User, Calendar, LogOut } from 'lucide-react';
 import logoPtit from './assets/logo-ptit.jpg';
 import avatarImg from './assets/avatar.jpg';
@@ -63,12 +63,22 @@ const Sidebar = () => {
 };
 
 const Header = () => {
+  const navigate = useNavigate();
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    sessionStorage.removeItem('isAuthenticated');
+    sessionStorage.removeItem('username');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('username');
+    navigate('/login');
+  };
 
   const formatHeaderDate = (d) => {
     const day = d.getDate();
@@ -91,6 +101,7 @@ const Header = () => {
   };
 
   const { dateStr, timeStr } = formatHeaderDate(time);
+  const currentUsername = sessionStorage.getItem('username') || localStorage.getItem('username') || 'admin';
 
   return (
     <header className="app-header">
@@ -104,7 +115,7 @@ const Header = () => {
       <div className="header-user">
         <Link to="/profile" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div className="header-user-info">
-            <span className="header-user-name">{localStorage.getItem('username') || 'User'}</span>
+            <span className="header-user-name">{currentUsername}</span>
             <span className="header-user-email"></span>
           </div>
           <img
@@ -113,9 +124,24 @@ const Header = () => {
             className="header-avatar"
           />
         </Link>
-        <Link to="/login" title="Đăng nhập / Đăng xuất" style={{ color: '#64748b', display: 'flex', alignItems: 'center', padding: '6px', borderRadius: '6px', transition: 'all 0.2s' }}>
+        <button
+          type="button"
+          onClick={handleLogout}
+          title="Đăng xuất"
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#64748b',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '6px',
+            borderRadius: '6px',
+            transition: 'all 0.2s',
+          }}
+        >
           <LogOut size={16} />
-        </Link>
+        </button>
       </div>
     </header>
   );
@@ -124,9 +150,13 @@ const Header = () => {
 const AppContent = () => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  // Kiểm tra đăng nhập theo session (mỗi lần mở tab mới hoặc chạy lại server đều bắt đăng nhập)
+  const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
 
   if (isAuthPage) {
+    if (isAuthenticated && location.pathname === '/login') {
+      return <Navigate to="/" replace />;
+    }
     return (
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -135,7 +165,7 @@ const AppContent = () => {
     );
   }
 
-  // Redirect to login if not authenticated
+  // Bắt buộc chuyển sang trang Login nếu chưa đăng nhập
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
@@ -151,7 +181,7 @@ const AppContent = () => {
             <Route path="/history" element={<ActionHistory />} />
             <Route path="/sensors" element={<DataSensor />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="*" element={<Dashboard />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </div>

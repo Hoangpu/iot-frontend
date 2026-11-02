@@ -26,9 +26,10 @@ const ActionHistory = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchTrigger, setSearchTrigger] = useState(0);
 
-  // Device list for dropdown - only LED 1 and LED 2
-  const [deviceList, setDeviceList] = useState(['LED 1', 'LED 2']);
+  // Device list for dropdown - LED 1, LED 2, LED 3
+  const [deviceList, setDeviceList] = useState(['LED 1', 'LED 2', 'LED 3']);
 
   // Apply all staged filters on search icon click or Enter
   const handleSearch = () => {
@@ -38,6 +39,7 @@ const ActionHistory = () => {
     setActionFilter(inputActionFilter);
     setStatusFilter(inputStatusFilter);
     setPage(0);
+    setSearchTrigger((prev) => prev + 1);
   };
 
   const handleSearchKeyDown = (e) => {
@@ -131,7 +133,7 @@ const ActionHistory = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, actionFilter, deviceFilter, statusFilter, searchTime, sortDir]);
+  }, [page, pageSize, actionFilter, deviceFilter, statusFilter, searchTime, sortDir, searchTrigger]);
 
   // Load actuators for device filter options 
   useEffect(() => {
@@ -140,7 +142,7 @@ const ActionHistory = () => {
         if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
           const names = res.data
             .map((d) => d.name)
-            .filter((name) => name === 'LED 1' || name === 'LED 2');
+            .filter((name) => name === 'LED 1' || name === 'LED 2' || name === 'LED 3');
           if (names.length > 0) {
             setDeviceList(Array.from(new Set(names)));
           }
@@ -155,7 +157,7 @@ const ActionHistory = () => {
 
   // Filter records
   const filteredRecords = useMemo(() => {
-    return records.filter((row) => {
+    const list = records.filter((row) => {
       const devName = getDeviceName(row);
       const status = formatStatus(row.status);
       const timeStr = formatLocalTime(row.time);
@@ -167,7 +169,15 @@ const ActionHistory = () => {
 
       return true;
     });
-  }, [records, deviceFilter, actionFilter, statusFilter, searchTime]);
+
+    list.sort((a, b) => {
+      const ta = new Date(a.time).getTime() || 0;
+      const tb = new Date(b.time).getTime() || 0;
+      return sortDir === 'asc' ? ta - tb : tb - ta;
+    });
+
+    return list;
+  }, [records, deviceFilter, actionFilter, statusFilter, searchTime, sortDir]);
 
   const displayItems = filteredRecords;
 

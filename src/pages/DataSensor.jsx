@@ -20,6 +20,7 @@ const DataSensor = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchTrigger, setSearchTrigger] = useState(0);
 
   // Dynamic placeholder based on selected condition
   const getPlaceholder = () => {
@@ -49,6 +50,7 @@ const DataSensor = () => {
     setSearchValue(inputSearchValue);
     setSortDir(inputSortDir);
     setPage(0);
+    setSearchTrigger((prev) => prev + 1);
   };
 
   const handleSearchKeyDown = (e) => {
@@ -144,7 +146,7 @@ const DataSensor = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, condition, searchValue, sortDir]);
+  }, [page, pageSize, condition, searchValue, sortDir, searchTrigger]);
 
   useEffect(() => {
     fetchData();

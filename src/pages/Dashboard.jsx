@@ -12,6 +12,7 @@ const Dashboard = () => {
   const initialDevices = [
     { id: 1, name: 'LED 1', type: 'led', isActive: false, icon: Lightbulb },
     { id: 2, name: 'LED 2', type: 'led', isActive: false, icon: Lightbulb },
+    { id: 3, name: 'LED 3', type: 'led', isActive: false, icon: Lightbulb },
   ];
 
   // Dữ liệu sóng mẫu
@@ -156,7 +157,7 @@ const Dashboard = () => {
     const turnOn = !isAllOn;
     const action = turnOn ? 'ON' : 'OFF';
 
-    setControlling({ 0: true, 1: true, 2: true });
+    setControlling({ 0: true, 1: true, 2: true, 3: true });
 
     const historyItems = devices.map((dev) =>
       addHistoryRecord({
@@ -295,7 +296,7 @@ const Dashboard = () => {
               <ResponsiveContainer width="100%" height={500}>
                 <LineChart
                   data={sensorData}
-                  margin={{ top: 22, right: 10, left: -10, bottom: 6 }}
+                  margin={{ top: 22, right: 20, left: -10, bottom: 6 }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -320,12 +321,12 @@ const Dashboard = () => {
                     tickLine={false}
                     axisLine={{ stroke: '#1c2333' }}
                   />
-                  {/* Cột Y bên phải: Ánh sáng (0 - 1000) */}
+                  {/* Cột Y bên phải: Ánh sáng (0 - 7000 lx) */}
                   <YAxis
                     yAxisId="right"
                     orientation="right"
-                    domain={[0, 1000]}
-                    ticks={[0, 200, 400, 600, 800, 1000]}
+                    domain={[0, 7000]}
+                    ticks={[0, 1400, 2800, 4200, 5600, 7000]}
                     stroke="#64748b"
                     tick={{ fill: '#64748b', fontSize: 11 }}
                     tickLine={false}
@@ -389,7 +390,7 @@ const Dashboard = () => {
                   type="button"
                   className={`device-toggle-pill ${isAllOn ? 'pill-active' : 'pill-inactive'} ${controlling[0] ? 'pill-loading' : ''}`}
                   onClick={handleToggleAll}
-                  disabled={controlling[0] || controlling[1] || controlling[2]}
+                  disabled={controlling[0] || controlling[1] || controlling[2] || controlling[3]}
                 >
                   <span className="toggle-slider-circle">
                     {controlling[0] && <span className="toggle-spinner-inner" />}

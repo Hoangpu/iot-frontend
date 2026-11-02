@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
+import { login } from '../services/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -9,23 +10,46 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  // Khi vào trang login, đảm bảo dọn sạch phiên đăng nhập cũ
+  useEffect(() => {
+    sessionStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('isAuthenticated');
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
       setError('Vui lòng nhập đầy đủ tên tài khoản và mật khẩu');
       return;
     }
 
-    // Giả lập kiểm tra tài khoản
-    if (username !== 'admin' || password !== '123456') {
-      setError('Tên tài khoản hoặc mật khẩu không chính xác');
+    const trimmedUser = username.trim();
+    const trimmedPass = password.trim();
+
+    // 1. Kiểm tra tài khoản admin mặc định (nhanh & luôn hoạt động)
+    if (trimmedUser === 'admin' && (trimmedPass === '123456' || trimmedPass === 'admin')) {
+      sessionStorage.setItem('isAuthenticated', 'true');
+      sessionStorage.setItem('username', 'admin');
+      localStorage.setItem('username', 'admin');
+      navigate('/');
       return;
     }
 
-    // Giả lập đăng nhập thành công và chuyển đến Dashboard
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('username', username);
-    navigate('/');
+    // 2. Thử đăng nhập qua backend API (nếu có tài khoản khác trong DB)
+    try {
+      const res = await login({ username: trimmedUser, password: trimmedPass });
+      if (res?.data && (res.data.token || res.data.id || res.data.user)) {
+        sessionStorage.setItem('isAuthenticated', 'true');
+        const displayName = res.data.user?.name || res.data.name || trimmedUser;
+        sessionStorage.setItem('username', displayName);
+        localStorage.setItem('username', displayName);
+        navigate('/');
+        return;
+      }
+      setError('Tên tài khoản hoặc mật khẩu không chính xác');
+    } catch {
+      setError('Tên tài khoản hoặc mật khẩu không chính xác');
+    }
   };
 
   return (
