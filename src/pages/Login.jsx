@@ -12,8 +12,14 @@ const Login = () => {
 
   // Khi vào trang login, đảm bảo dọn sạch phiên đăng nhập cũ
   useEffect(() => {
+    sessionStorage.removeItem('token');
     sessionStorage.removeItem('isAuthenticated');
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('user');
+    localStorage.removeItem('token');
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('username');
+    localStorage.removeItem('user');
   }, []);
 
   const handleSubmit = async (e) => {
@@ -26,29 +32,30 @@ const Login = () => {
     const trimmedUser = username.trim();
     const trimmedPass = password.trim();
 
-    // 1. Kiểm tra tài khoản admin mặc định (nhanh & luôn hoạt động)
-    if (trimmedUser === 'admin' && (trimmedPass === '123456' || trimmedPass === 'admin')) {
-      sessionStorage.setItem('isAuthenticated', 'true');
-      sessionStorage.setItem('username', 'admin');
-      localStorage.setItem('username', 'admin');
-      navigate('/');
-      return;
-    }
-
-    // 2. Thử đăng nhập qua backend API (nếu có tài khoản khác trong DB)
     try {
       const res = await login({ username: trimmedUser, password: trimmedPass });
-      if (res?.data && (res.data.token || res.data.id || res.data.user)) {
+      if (res?.data && res.data.token) {
+        sessionStorage.setItem('token', res.data.token);
+        localStorage.setItem('token', res.data.token);
         sessionStorage.setItem('isAuthenticated', 'true');
-        const displayName = res.data.user?.name || res.data.name || trimmedUser;
+        localStorage.setItem('isAuthenticated', 'true');
+
+        const displayName = res.data.user?.name || res.data.user?.studentId || trimmedUser;
         sessionStorage.setItem('username', displayName);
         localStorage.setItem('username', displayName);
+
+        if (res.data.user) {
+          sessionStorage.setItem('user', JSON.stringify(res.data.user));
+          localStorage.setItem('user', JSON.stringify(res.data.user));
+        }
+
         navigate('/');
         return;
       }
       setError('Tên tài khoản hoặc mật khẩu không chính xác');
-    } catch {
-      setError('Tên tài khoản hoặc mật khẩu không chính xác');
+    } catch (err) {
+      const errMsg = err.response?.data;
+      setError(typeof errMsg === 'string' ? errMsg : 'Tên tài khoản hoặc mật khẩu không chính xác');
     }
   };
 

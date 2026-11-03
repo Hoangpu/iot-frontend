@@ -10,7 +10,7 @@ const DEFAULT_PROJECT_RESOURCES = {
   phone: '0975496316',
   email: 'maianhhoang123@gmail.com',
   github: 'https://github.com/Hoangpu',
-  pdfReport: 'https://drive.google.com/file/d/BaoCao_CuoiKy_IOT.pdf',
+  pdfReport: 'https://drive.google.com/drive/u/0/folders/1krNnExsEDUMrT8QJMHgk2DNIbtRFiS-_?lfhs=2',
   apiDoc: 'https://documenter.getpostman.com/view/48579292/2sBYHSxLRo',
   figma: 'https://www.figma.com/design/cLg7DnfLflfhnFXXu6bUol/IOT_UI?node-id=0-1&t=fMOu29unTpOKjclI-0',
 };

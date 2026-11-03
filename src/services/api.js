@@ -22,17 +22,63 @@ const api = axios.create({
 });
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  JWT TOKEN INTERCEPTOR
+//  Tự động gắn Bearer Token vào header mọi request
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+api.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  RESPONSE INTERCEPTOR
+//  Nếu gặp lỗi 401 (chưa có token hoặc token hết hạn) -> Xóa token và chuyển về login
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      console.warn('🔒 Token không hợp lệ hoặc đã hết hạn, chuyển hướng đăng nhập');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('token');
+      localStorage.removeItem('isAuthenticated');
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  MOCK FALLBACK WRAPPER
-//  Gọi API thật trước → nếu lỗi (backend tắt) → dùng mock data
+//  Gọi API thật trước -> nếu lỗi do backend tắt hoàn toàn (Network Error) -> dùng mock
+//  Nếu backend trả về mã lỗi HTTP (400, 401, ...) -> ném lỗi để UI xử lý chính xác
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const withMockFallback = (apiCall, mockFn) => {
   return apiCall().catch((err) => {
+    if (err.response) {
+      throw err;
+    }
     console.warn('⚠️ Backend không phản hồi, dùng dữ liệu mẫu (mock):', err.message);
     return mockFn();
   });
 };
 
 // ============ USER (UC06) ============
+export const getCurrentUser = () =>
+  withMockFallback(
+    () => api.get('/users/me'),
+    () => ({ data: MOCK_USER })
+  );
+
 export const getUser = (id = 1) =>
   withMockFallback(
     () => api.get(`/users/${id}`),
@@ -45,6 +91,7 @@ export const login = (data) =>
     () => ({
       data: {
         token: 'mock-jwt-token-12345',
+        type: 'Bearer',
         user: MOCK_USER,
         message: 'Login thành công (mock)',
       },
@@ -56,10 +103,14 @@ export const register = (data) =>
     () => api.post('/users/register', data),
     () => ({
       data: {
-        ...MOCK_USER,
-        name: data.name || 'New User',
-        email: data.email || 'new@iot.com',
-        username: data.username || 'newuser',
+        token: 'mock-jwt-token-12345',
+        type: 'Bearer',
+        user: {
+          ...MOCK_USER,
+          name: data.fullName || 'New User',
+          email: data.email || 'new@iot.com',
+          studentId: data.username || 'newuser',
+        },
         message: 'Đăng ký thành công (mock)',
       },
     })

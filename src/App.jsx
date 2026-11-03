@@ -73,10 +73,14 @@ const Header = () => {
 
   const handleLogout = (e) => {
     e.preventDefault();
+    sessionStorage.removeItem('token');
     sessionStorage.removeItem('isAuthenticated');
     sessionStorage.removeItem('username');
+    sessionStorage.removeItem('user');
+    localStorage.removeItem('token');
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('username');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 
@@ -150,8 +154,9 @@ const Header = () => {
 const AppContent = () => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
-  // Kiểm tra đăng nhập theo session (mỗi lần mở tab mới hoặc chạy lại server đều bắt đăng nhập)
-  const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+  // Kiểm tra đăng nhập và token
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  const isAuthenticated = (sessionStorage.getItem('isAuthenticated') === 'true' || localStorage.getItem('isAuthenticated') === 'true') && !!token;
 
   if (isAuthPage) {
     if (isAuthenticated && location.pathname === '/login') {
